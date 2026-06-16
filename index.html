@@ -421,8 +421,9 @@
       wordEl.innerHTML = textToHtml(quizWords[quizIndex].en);
       transEl.style.display = 'none';
       transEl.innerHTML = textToHtml(quizWords[quizIndex].uk);
-      twemoji.parse(wordEl, { folder: 'svg', ext: '.svg' });
-      twemoji.parse(transEl, { folder: 'svg', ext: '.svg' });
+      const twemojiOpts = { base: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/', folder: 'svg', ext: '.svg' };
+      twemoji.parse(wordEl, twemojiOpts);
+      twemoji.parse(transEl, twemojiOpts);
       document.getElementById('quizProgress').textContent = `${quizIndex + 1} / ${quizWords.length}`;
     }
 
