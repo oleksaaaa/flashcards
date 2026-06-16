@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="80" fill="#d32f2f"/>
+  <!-- Back card -->
+  <rect x="130" y="150" width="280" height="190" rx="18" fill="#fff" opacity="0.35"/>
+  <!-- Front card -->
+  <rect x="100" y="172" width="280" height="190" rx="18" fill="#fff"/>
+  <!-- Lines suggesting text -->
+  <rect x="136" y="218" width="160" height="14" rx="7" fill="#d32f2f" opacity="0.7"/>
+  <rect x="136" y="248" width="208" height="14" rx="7" fill="#d32f2f" opacity="0.4"/>
+  <rect x="136" y="278" width="130" height="14" rx="7" fill="#d32f2f" opacity="0.4"/>
+  <!-- "FC" label -->
+  <text x="256" y="340" font-family="Arial,sans-serif" font-weight="bold" font-size="48" fill="#d32f2f" text-anchor="middle" opacity="0.15">FC</text>
+</svg>
