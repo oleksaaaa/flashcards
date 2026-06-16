@@ -609,6 +609,13 @@
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/flashcards/sw.js');
   }
+
+  let _installPrompt = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _installPrompt = e;
+    _installPrompt.prompt();
+  });
 </script>
 </body>
 </html>
