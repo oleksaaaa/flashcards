@@ -31,11 +31,18 @@
   /* Quiz mode overlay */
   #quizOverlay {
     display: none; position: fixed; inset: 0; background: #fff;
-    align-items: center; justify-content: center; flex-direction: column;
-    cursor: pointer; z-index: 1000; text-align: center;
+    flex-direction: column; cursor: pointer; z-index: 1000; text-align: center;
+  }
+  #quizWordPane {
+    height: 45%; display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 24px; box-sizing: border-box;
   }
   #quizWord { font-size: 64px; font-weight: bold; }
-  #quizTranslation { font-size: 36px; color: #d32f2f; margin-top: 20px; }
+  #quizTranslationPane {
+    height: 55%; display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 24px; box-sizing: border-box;
+  }
+  #quizTranslation { font-size: 36px; color: #d32f2f; }
   #quizClose { position: absolute; top: 20px; right: 30px; font-size: 28px; cursor: pointer; }
   #quizProgress { position: absolute; top: 20px; left: 30px; font-size: 18px; color: #888; }
   #quizWord img.emoji, #quizTranslation img.emoji { height: 1em; width: 1em; vertical-align: -0.1em; }
@@ -97,8 +104,8 @@
   <div id="quizOverlay">
     <div id="quizClose" onclick="closeQuiz(event)">&times;</div>
     <div id="quizProgress"></div>
-    <div id="quizWord"></div>
-    <div id="quizTranslation" style="display:none"></div>
+    <div id="quizWordPane"><div id="quizWord"></div></div>
+    <div id="quizTranslationPane"><div id="quizTranslation" style="display:none"></div></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
