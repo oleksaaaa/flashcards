@@ -401,11 +401,15 @@
       return words;
     }
 
+    function textToHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+    }
+
     function showQuizWord() {
       quizRevealed = false;
-      document.getElementById('quizWord').textContent = quizWords[quizIndex].en;
+      document.getElementById('quizWord').innerHTML = textToHtml(quizWords[quizIndex].en);
       document.getElementById('quizTranslation').style.display = 'none';
-      document.getElementById('quizTranslation').textContent = quizWords[quizIndex].uk;
+      document.getElementById('quizTranslation').innerHTML = textToHtml(quizWords[quizIndex].uk);
       document.getElementById('quizProgress').textContent = `${quizIndex + 1} / ${quizWords.length}`;
     }
 
