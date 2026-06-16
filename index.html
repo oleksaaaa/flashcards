@@ -38,6 +38,7 @@
   #quizTranslation { font-size: 36px; color: #d32f2f; margin-top: 20px; }
   #quizClose { position: absolute; top: 20px; right: 30px; font-size: 28px; cursor: pointer; }
   #quizProgress { position: absolute; top: 20px; left: 30px; font-size: 18px; color: #888; }
+  #quizWord img.emoji, #quizTranslation img.emoji { height: 1em; width: 1em; vertical-align: -0.1em; }
 </style>
 </head>
 <body>
@@ -100,6 +101,7 @@
     <div id="quizTranslation" style="display:none"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
     const GOOGLE_CLIENT_ID = '995399885896-7ta98tasa45hi3nfmshvkijsbapnsj77.apps.googleusercontent.com';
@@ -407,9 +409,13 @@
 
     function showQuizWord() {
       quizRevealed = false;
-      document.getElementById('quizWord').innerHTML = textToHtml(quizWords[quizIndex].en);
-      document.getElementById('quizTranslation').style.display = 'none';
-      document.getElementById('quizTranslation').innerHTML = textToHtml(quizWords[quizIndex].uk);
+      const wordEl = document.getElementById('quizWord');
+      const transEl = document.getElementById('quizTranslation');
+      wordEl.innerHTML = textToHtml(quizWords[quizIndex].en);
+      transEl.style.display = 'none';
+      transEl.innerHTML = textToHtml(quizWords[quizIndex].uk);
+      twemoji.parse(wordEl, { folder: 'svg', ext: '.svg' });
+      twemoji.parse(transEl, { folder: 'svg', ext: '.svg' });
       document.getElementById('quizProgress').textContent = `${quizIndex + 1} / ${quizWords.length}`;
     }
 
