@@ -183,9 +183,12 @@
   <!-- Header -->
   <div id="appHeader">
     <h1>FlashCards <span id="appVersion" style="font-size:13px;font-weight:400;opacity:0.7"></span></h1>
-    <div id="headerUser" style="display:none">
-      <span id="userName" style="opacity:0.85"></span>
-      <button onclick="logout()">Log out</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button id="installBtn" style="display:none;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:#fff;border-radius:20px;padding:4px 14px;font-size:13px;cursor:pointer" onclick="installApp()">Install</button>
+      <div id="headerUser" style="display:none">
+        <span id="userName" style="opacity:0.85"></span>
+        <button onclick="logout()">Log out</button>
+      </div>
     </div>
   </div>
 
@@ -614,8 +617,20 @@
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     _installPrompt = e;
-    _installPrompt.prompt();
+    document.getElementById('installBtn').style.display = 'block';
   });
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('installBtn').style.display = 'none';
+    _installPrompt = null;
+  });
+  function installApp() {
+    if (!_installPrompt) return;
+    _installPrompt.prompt();
+    _installPrompt.userChoice.then(() => {
+      _installPrompt = null;
+      document.getElementById('installBtn').style.display = 'none';
+    });
+  }
 </script>
 </body>
 </html>
