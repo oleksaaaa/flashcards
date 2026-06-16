@@ -2,467 +2,609 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#d32f2f">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2e7d32">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Flashcards">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FlashCards">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Flashcards Quiz</title>
+<title>FlashCards</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
-  th { background: #d32f2f; color: #fff; }
-  tr:nth-child(even) { background: #fafafa; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  #userBar { position: absolute; top: 10px; right: 20px; }
-  #userBar button { margin-left: 8px; }
+  html, body {
+    height: 100%; width: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: #f5f5f5;
+    color: #111;
+  }
 
-  .tabs { display: flex; gap: 4px; margin: 50px 0 20px; border-bottom: 2px solid #ccc; }
-  .tab { padding: 10px 20px; cursor: pointer; background: #f0f0f0; border: 1px solid #ccc; border-bottom: none; border-radius: 6px 6px 0 0; }
-  .tab.active { background: #fff; font-weight: bold; border-bottom: 2px solid #fff; margin-bottom: -2px; }
-  .tabContent { display: none; }
-  .tabContent.active { display: block; }
+  /* ── App shell ── */
+  #shell {
+    display: flex; flex-direction: column;
+    height: 100%; width: 100%;
+  }
 
-  /* Translate tab */
-  #translateBox { display: flex; flex-direction: column; gap: 12px; }
-  #enInput, #ukInput { width: 100%; height: 120px; font-size: 18px; padding: 8px; box-sizing: border-box; }
+  /* ── Header ── */
+  #appHeader {
+    background: #2e7d32; color: #fff;
+    padding: 16px 20px;
+    padding-top: calc(16px + env(safe-area-inset-top));
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  #appHeader h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+  #headerUser { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  #headerUser button {
+    background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5);
+    color: #fff; border-radius: 20px; padding: 4px 14px; font-size: 13px; cursor: pointer;
+  }
 
-  /* Quizzes tab */
-  .quizItem { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 6px; }
-  .quizItem .icon { font-size: 24px; }
-  .quizItem .name { flex: 1; }
+  /* ── Content area ── */
+  #appContent {
+    flex: 1; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
 
-  /* Quiz mode overlay */
+  .tabContent {
+    display: none; flex: 1; overflow-y: auto;
+    padding: 20px 16px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+  .tabContent.active { display: flex; flex-direction: column; }
+
+  /* ── Bottom tab bar ── */
+  #tabBar {
+    display: flex; background: #fff;
+    border-top: 1px solid #e0e0e0;
+    padding-bottom: env(safe-area-inset-bottom);
+    flex-shrink: 0;
+  }
+  .tabBtn {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 10px 4px; gap: 4px;
+    cursor: pointer; border: none; background: none;
+    color: #999; font-size: 11px; font-weight: 500;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tabBtn .tabIcon { font-size: 24px; line-height: 1; }
+  .tabBtn.active { color: #2e7d32; }
+
+  /* ── Login screen ── */
+  #loginScreen {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 24px;
+    padding: 40px 24px;
+  }
+  #loginScreen h2 { font-size: 26px; font-weight: 700; text-align: center; color: #2e7d32; }
+  #loginScreen p { font-size: 16px; color: #666; text-align: center; }
+
+  /* ── Translate tab ── */
+  #translateBox { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+  .inputGroup { display: flex; flex-direction: column; gap: 6px; }
+  .inputLabel { font-size: 13px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+  #enInput, #ukInput {
+    width: 100%; flex: 1; min-height: 100px;
+    font-size: 20px; padding: 14px; border: 1px solid #ddd;
+    border-radius: 12px; background: #fff; resize: none;
+    font-family: inherit;
+  }
+  #enInput:focus, #ukInput:focus { outline: none; border-color: #2e7d32; }
+  #addToQuizBtn {
+    width: 100%; padding: 16px; font-size: 18px; font-weight: 600;
+    background: #2e7d32; color: #fff; border: none; border-radius: 12px;
+    cursor: pointer; margin-top: 8px;
+  }
+  #addedMsg { text-align: center; color: #388e3c; font-size: 16px; font-weight: 600; padding: 8px; }
+
+  /* ── Quizzes tab ── */
+  #quizActions {
+    display: flex; gap: 10px; margin-bottom: 16px; flex-shrink: 0;
+  }
+  #quizActions button {
+    flex: 1; padding: 14px 8px; font-size: 15px; font-weight: 600;
+    border: none; border-radius: 12px; cursor: pointer;
+  }
+  #btnAddQuiz    { background: #fff; border: 1px solid #2e7d32 !important; color: #2e7d32; }
+  #btnStartQuiz  { background: #2e7d32; color: #fff; }
+  #btnDeleteQuiz { background: #fff; border: 1px solid #ccc !important; color: #666; }
+
+  #quizList { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  .quizItem {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px; background: #fff; border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .quizItem input[type=checkbox] { width: 22px; height: 22px; accent-color: #2e7d32; flex-shrink: 0; }
+  .quizItem .icon { font-size: 28px; flex-shrink: 0; }
+  .quizItem .name { flex: 1; font-size: 17px; font-weight: 500; }
+
+  /* ── Settings tab ── */
+  .settingRow {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 16px; background: #fff; border-radius: 12px;
+    margin-bottom: 10px; font-size: 17px;
+  }
+  .toggle {
+    position: relative; width: 51px; height: 31px; flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: #ccc; border-radius: 31px;
+    transition: background 0.2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute;
+    width: 27px; height: 27px; left: 2px; top: 2px;
+    background: #fff; border-radius: 50%; transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .toggle input:checked + .toggle-slider { background: #2e7d32; }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  /* ── Quiz overlay ── */
   #quizOverlay {
     display: none; position: fixed; inset: 0; background: #fff;
     flex-direction: column; cursor: pointer; z-index: 1000; text-align: center;
   }
   #quizWordPane {
     height: 45%; display: flex; align-items: flex-end; justify-content: center;
-    padding-bottom: 24px; box-sizing: border-box;
+    padding: 0 24px 28px;
   }
-  #quizWord { font-size: 64px; font-weight: bold; }
+  #quizWord { font-size: clamp(32px, 8vw, 72px); font-weight: 700; line-height: 1.2; }
   #quizTranslationPane {
     height: 55%; display: flex; align-items: flex-start; justify-content: center;
-    padding-top: 24px; box-sizing: border-box;
+    padding: 28px 24px 0;
   }
-  #quizTranslation { font-size: 36px; color: #d32f2f; }
-  #quizClose { position: absolute; top: 20px; right: 30px; font-size: 28px; cursor: pointer; }
-  #quizProgress { position: absolute; top: 20px; left: 30px; font-size: 18px; color: #888; }
+  #quizTranslation { font-size: clamp(24px, 6vw, 52px); color: #2e7d32; line-height: 1.3; }
+  #quizClose {
+    position: absolute; top: calc(20px + env(safe-area-inset-top));
+    right: 24px; font-size: 32px; color: #999; cursor: pointer; z-index: 1;
+    width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  }
+  #quizProgress {
+    position: absolute; top: calc(20px + env(safe-area-inset-top));
+    left: 24px; font-size: 18px; color: #bbb; font-weight: 600;
+  }
   #quizWord img.emoji, #quizTranslation img.emoji { height: 1em; width: 1em; vertical-align: -0.1em; }
+
+  /* divider line between word and translation panes */
+  #quizDivider {
+    height: 1px; background: #f0f0f0; flex-shrink: 0; margin: 0 40px;
+  }
 </style>
 </head>
 <body>
-  <div id="userBar" style="display:none">
-    Logged in as <span id="userName"></span>
-    <button onclick="logout()">Log out</button>
+<div id="shell">
+
+  <!-- Header -->
+  <div id="appHeader">
+    <h1>FlashCards</h1>
+    <div id="headerUser" style="display:none">
+      <span id="userName" style="opacity:0.85"></span>
+      <button onclick="logout()">Log out</button>
+    </div>
   </div>
 
+  <!-- Login screen -->
   <div id="loginScreen">
-    <h1>Please sign in with Google</h1>
+    <h2>Welcome to FlashCards</h2>
+    <p>Sign in with Google to get started</p>
     <div id="g_id_signin"></div>
   </div>
 
+  <!-- Main app -->
   <div id="appContent" style="display:none">
-
-    <div class="tabs">
-      <div class="tab active" data-tab="translate" onclick="showTab('translate')">Translate</div>
-      <div class="tab" data-tab="quizzes" onclick="showTab('quizzes')">Quizzes</div>
-      <div class="tab" data-tab="settings" onclick="showTab('settings')">Settings</div>
-    </div>
 
     <!-- Translate tab -->
     <div class="tabContent active" id="tab-translate">
       <div id="translateBox">
-        <div>
-          <h3>English</h3>
-          <textarea id="enInput" placeholder="Enter a word..."></textarea>
+        <div class="inputGroup" style="flex:1; display:flex; flex-direction:column;">
+          <span class="inputLabel">English</span>
+          <textarea id="enInput" placeholder="Enter a word or phrase…" style="flex:1"></textarea>
         </div>
-        <div>
-          <h3>Ukrainian</h3>
-          <textarea id="ukInput" placeholder="Translation..."></textarea>
+        <div class="inputGroup" style="flex:1; display:flex; flex-direction:column;">
+          <span class="inputLabel">Ukrainian</span>
+          <textarea id="ukInput" placeholder="Translation…" style="flex:1"></textarea>
         </div>
+        <button id="addToQuizBtn">Add to Quiz</button>
+        <div id="addedMsg" style="display:none">✓ Added!</div>
       </div>
-      <button id="addToQuizBtn" style="margin-top:15px; padding:8px 16px;">Add to Quiz</button>
-      <div id="addedMsg" style="color:green; margin-top:8px; display:none;">Added!</div>
     </div>
 
     <!-- Quizzes tab -->
     <div class="tabContent" id="tab-quizzes">
-      <button onclick="addQuiz()" style="padding:8px 16px;">Add new Quiz</button>
-      <button onclick="startQuiz()" style="padding:8px 16px; margin-left:10px;">Start Quiz</button>
-      <button onclick="deleteSelectedQuizzes()" style="padding:8px 16px; margin-left:10px;">Delete Quiz</button>
-      <div id="quizList" style="margin-top:15px;"></div>
+      <div id="quizActions">
+        <button id="btnAddQuiz"    onclick="addQuiz()">+ Add</button>
+        <button id="btnStartQuiz"  onclick="startQuiz()">▶ Start</button>
+        <button id="btnDeleteQuiz" onclick="deleteSelectedQuizzes()">Delete</button>
+      </div>
+      <div id="quizList"></div>
     </div>
 
     <!-- Settings tab -->
     <div class="tabContent" id="tab-settings">
-      <h3>Settings</h3>
-      <label><input type="checkbox" id="shuffleSetting"> Shuffle words in quiz</label><br><br>
-      <label><input type="checkbox" id="loopSetting"> Loop quiz (restart when finished)</label>
+      <div class="settingRow">
+        <span>Shuffle words</span>
+        <label class="toggle">
+          <input type="checkbox" id="shuffleSetting">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="settingRow">
+        <span>Loop quiz</span>
+        <label class="toggle">
+          <input type="checkbox" id="loopSetting">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
     </div>
 
   </div>
 
-  <!-- Quiz mode overlay -->
-  <div id="quizOverlay">
-    <div id="quizClose" onclick="closeQuiz(event)">&times;</div>
-    <div id="quizProgress"></div>
-    <div id="quizWordPane"><div id="quizWord"></div></div>
-    <div id="quizTranslationPane"><div id="quizTranslation" style="display:none"></div></div>
+  <!-- Bottom tab bar -->
+  <div id="tabBar" style="display:none">
+    <button class="tabBtn active" data-tab="translate" onclick="showTab('translate')">
+      <span class="tabIcon">✏️</span>Translate
+    </button>
+    <button class="tabBtn" data-tab="quizzes" onclick="showTab('quizzes')">
+      <span class="tabIcon">📚</span>Quizzes
+    </button>
+    <button class="tabBtn" data-tab="settings" onclick="showTab('settings')">
+      <span class="tabIcon">⚙️</span>Settings
+    </button>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script>
-    const GOOGLE_CLIENT_ID = '995399885896-7ta98tasa45hi3nfmshvkijsbapnsj77.apps.googleusercontent.com';
-    let loggedInUser = null;
+</div>
 
-    function handleCredentialResponse(response) {
-      const payload = JSON.parse(atob(response.credential.split('.')[1]));
-      loggedInUser = payload.name || payload.email;
-      localStorage.setItem('loggedInUser', loggedInUser);
+<!-- Quiz overlay -->
+<div id="quizOverlay">
+  <div id="quizClose" onclick="closeQuiz(event)">&times;</div>
+  <div id="quizProgress"></div>
+  <div id="quizWordPane"><div id="quizWord"></div></div>
+  <div id="quizDivider"></div>
+  <div id="quizTranslationPane"><div id="quizTranslation" style="display:none"></div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  const GOOGLE_CLIENT_ID = '995399885896-7ta98tasa45hi3nfmshvkijsbapnsj77.apps.googleusercontent.com';
+  let loggedInUser = null;
+
+  function handleCredentialResponse(response) {
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    loggedInUser = payload.name || payload.email;
+    localStorage.setItem('loggedInUser', loggedInUser);
+    showApp();
+  }
+
+  function showApp() {
+    document.getElementById('userName').textContent = loggedInUser;
+    document.getElementById('headerUser').style.display = 'flex';
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appContent').style.display = 'flex';
+    document.getElementById('tabBar').style.display = 'flex';
+    renderQuizList();
+  }
+
+  function logout() {
+    loggedInUser = null;
+    localStorage.removeItem('loggedInUser');
+    google.accounts.id.disableAutoSelect();
+    document.getElementById('headerUser').style.display = 'none';
+    document.getElementById('appContent').style.display = 'none';
+    document.getElementById('tabBar').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleCredentialResponse
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('g_id_signin'),
+      { theme: 'outline', size: 'large' }
+    );
+
+    const savedUser = localStorage.getItem('loggedInUser');
+    if (savedUser) {
+      loggedInUser = savedUser;
       showApp();
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
     }
 
-    function showApp() {
-      document.getElementById('userName').textContent = loggedInUser;
-      document.getElementById('userBar').style.display = 'block';
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('appContent').style.display = 'block';
-      renderQuizList();
+    document.getElementById('shuffleSetting').checked = localStorage.getItem('quizShuffle') !== 'false';
+    document.getElementById('loopSetting').checked = localStorage.getItem('quizLoop') === 'true';
+    document.getElementById('shuffleSetting').onchange = e => localStorage.setItem('quizShuffle', e.target.checked);
+    document.getElementById('loopSetting').onchange = e => localStorage.setItem('quizLoop', e.target.checked);
+  };
+
+  // ---------- Tabs ----------
+  function showTab(name) {
+    document.querySelectorAll('.tabBtn').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.tabContent').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
+  }
+
+  // ---------- Translate ----------
+  let translateTimer = null;
+  document.addEventListener('input', e => {
+    if (e.target.id !== 'enInput') return;
+    clearTimeout(translateTimer);
+    const text = e.target.value.trim();
+    if (!text) { document.getElementById('ukInput').value = ''; return; }
+    translateTimer = setTimeout(() => translateText(text), 400);
+  });
+
+  async function translateText(text) {
+    try {
+      const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|uk`);
+      const data = await res.json();
+      document.getElementById('ukInput').value = data.responseData.translatedText || '';
+    } catch (e) {
+      console.error('Translation failed', e);
     }
+  }
 
-    function logout() {
-      loggedInUser = null;
-      localStorage.removeItem('loggedInUser');
-      google.accounts.id.disableAutoSelect();
-      document.getElementById('userBar').style.display = 'none';
-      document.getElementById('appContent').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'block';
-    }
+  document.getElementById('addToQuizBtn').addEventListener('click', () => {
+    const en = document.getElementById('enInput').value.trim();
+    const uk = document.getElementById('ukInput').value.trim();
+    if (!en || !uk) return;
 
-    window.onload = function () {
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleCredentialResponse
-      });
-      google.accounts.id.renderButton(
-        document.getElementById('g_id_signin'),
-        { theme: 'outline', size: 'large' }
-      );
+    const words = JSON.parse(localStorage.getItem('myWords') || '[]');
+    words.push({ en, uk });
+    localStorage.setItem('myWords', JSON.stringify(words));
 
-      const savedUser = localStorage.getItem('loggedInUser');
-      if (savedUser) {
-        loggedInUser = savedUser;
-        showApp();
-      }
+    const msg = document.getElementById('addedMsg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 1500);
 
-      document.getElementById('shuffleSetting').checked = localStorage.getItem('quizShuffle') !== 'false';
-      document.getElementById('loopSetting').checked = localStorage.getItem('quizLoop') === 'true';
-      document.getElementById('shuffleSetting').onchange = e => localStorage.setItem('quizShuffle', e.target.checked);
-      document.getElementById('loopSetting').onchange = e => localStorage.setItem('quizLoop', e.target.checked);
-    };
+    renderQuizList();
+  });
 
-    // ---------- Tabs ----------
-    function showTab(name) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-      document.querySelectorAll('.tabContent').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
-    }
+  // ---------- Quizzes ----------
+  function getQuizzes() {
+    return JSON.parse(localStorage.getItem('quizzes') || '[]');
+  }
+  function saveQuizzes(list) {
+    localStorage.setItem('quizzes', JSON.stringify(list));
+  }
 
-    // ---------- Translate ----------
-    let translateTimer = null;
-    document.addEventListener('input', e => {
-      if (e.target.id !== 'enInput') return;
-      clearTimeout(translateTimer);
-      const text = e.target.value.trim();
-      if (!text) { document.getElementById('ukInput').value = ''; return; }
-      translateTimer = setTimeout(() => translateText(text), 400);
+  function renderQuizList() {
+    const container = document.getElementById('quizList');
+    container.innerHTML = '';
+
+    const myWords = JSON.parse(localStorage.getItem('myWords') || '[]');
+    const builtIn = { id: 'my-words', type: 'words', name: `My Words (${myWords.length})`, icon: '📝' };
+
+    const all = [builtIn, ...getQuizzes()];
+    all.forEach(q => {
+      const div = document.createElement('div');
+      div.className = 'quizItem';
+      const label = q.id === 'my-words' ? q.name
+        : q.type === 'folder' ? `${q.name} (${q.count ?? 0} spreadsheets)`
+        : `${q.name} (${q.count ?? 0})`;
+      div.innerHTML = `
+        <input type="checkbox" data-id="${q.id}">
+        <span class="icon">${q.icon}</span>
+        <span class="name">${label}</span>
+      `;
+      container.appendChild(div);
     });
+  }
 
-    async function translateText(text) {
-      try {
-        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|uk`);
-        const data = await res.json();
-        document.getElementById('ukInput').value = data.responseData.translatedText || '';
-      } catch (e) {
-        console.error('Translation failed', e);
+  function deleteSelectedQuizzes() {
+    const checked = [...document.querySelectorAll('#quizList input[type=checkbox]:checked')]
+      .map(cb => cb.dataset.id)
+      .filter(id => id !== 'my-words');
+    if (checked.length === 0) { alert('Select at least one quiz to delete'); return; }
+    if (!confirm(`Delete ${checked.length} quiz(es)?`)) return;
+    saveQuizzes(getQuizzes().filter(q => !checked.includes(q.id)));
+    renderQuizList();
+  }
+
+  const QUIZ_ICONS = { sheet: '📄', multisheet: '📑', folder: '📁' };
+
+  // ---------- Google API ----------
+  let accessToken = null;
+  let tokenClient = null;
+
+  function ensureAccessToken() {
+    return new Promise((resolve, reject) => {
+      if (accessToken) return resolve(accessToken);
+      if (!tokenClient) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly',
+          callback: (resp) => {
+            if (resp.error) { reject(resp); return; }
+            accessToken = resp.access_token;
+            resolve(accessToken);
+          }
+        });
       }
-    }
-
-    document.getElementById('addToQuizBtn').addEventListener('click', () => {
-      const en = document.getElementById('enInput').value.trim();
-      const uk = document.getElementById('ukInput').value.trim();
-      if (!en || !uk) return;
-
-      const words = JSON.parse(localStorage.getItem('myWords') || '[]');
-      words.push({ en, uk });
-      localStorage.setItem('myWords', JSON.stringify(words));
-
-      const msg = document.getElementById('addedMsg');
-      msg.style.display = 'block';
-      setTimeout(() => msg.style.display = 'none', 1500);
-
-      renderQuizList();
+      tokenClient.requestAccessToken();
     });
+  }
 
-    // ---------- Quizzes ----------
-    function getQuizzes() {
-      return JSON.parse(localStorage.getItem('quizzes') || '[]');
-    }
-    function saveQuizzes(list) {
-      localStorage.setItem('quizzes', JSON.stringify(list));
-    }
+  async function addQuiz() {
+    const url = prompt('Paste the Google Sheets / Drive folder URL:');
+    if (!url) return;
 
-    function renderQuizList() {
-      const container = document.getElementById('quizList');
-      container.innerHTML = '';
+    const folderMatch = url.match(/folders\/([a-zA-Z0-9_-]+)/);
+    const sheetMatch = url.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
 
-      const myWords = JSON.parse(localStorage.getItem('myWords') || '[]');
-      const builtIn = {
-        id: 'my-words', type: 'words', name: `My Words (${myWords.length})`, icon: '📝'
-      };
-
-      const all = [builtIn, ...getQuizzes()];
-      all.forEach(q => {
-        const div = document.createElement('div');
-        div.className = 'quizItem';
-        const label = q.id === 'my-words' ? q.name
-          : q.type === 'folder' ? `${q.name} (${q.count ?? 0} spreadsheets)`
-          : `${q.name} (${q.count ?? 0})`;
-        div.innerHTML = `
-          <input type="checkbox" data-id="${q.id}">
-          <span class="icon">${q.icon}</span>
-          <span class="name">${label}</span>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function deleteSelectedQuizzes() {
-      const checked = [...document.querySelectorAll('#quizList input[type=checkbox]:checked')]
-        .map(cb => cb.dataset.id)
-        .filter(id => id !== 'my-words');
-      if (checked.length === 0) { alert('Select at least one quiz to delete'); return; }
-      if (!confirm(`Delete ${checked.length} quiz(es)?`)) return;
-      saveQuizzes(getQuizzes().filter(q => !checked.includes(q.id)));
-      renderQuizList();
-    }
-
-    const QUIZ_ICONS = { sheet: '📄', multisheet: '📑', folder: '📁' };
-
-    // ---------- Google API access token (for reading sheet/folder titles & data) ----------
-    let accessToken = null;
-    let tokenClient = null;
-
-    function ensureAccessToken() {
-      return new Promise((resolve, reject) => {
-        if (accessToken) return resolve(accessToken);
-        if (!tokenClient) {
-          tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: GOOGLE_CLIENT_ID,
-            scope: 'https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly',
-            callback: (resp) => {
-              if (resp.error) { reject(resp); return; }
-              accessToken = resp.access_token;
-              resolve(accessToken);
-            }
-          });
-        }
-        tokenClient.requestAccessToken();
-      });
-    }
-
-    async function addQuiz() {
-      const url = prompt('Paste the Google Sheets / Drive folder URL:');
-      if (!url) return;
-
-      const folderMatch = url.match(/folders\/([a-zA-Z0-9_-]+)/);
-      const sheetMatch = url.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-
-      let quiz;
-      try {
-        const token = await ensureAccessToken();
-        if (folderMatch) {
-          quiz = await buildFolderQuiz(folderMatch[1], token);
-        } else if (sheetMatch) {
-          const gidMatch = url.match(/gid=(\d+)/);
-          quiz = await buildSheetQuiz(sheetMatch[1], gidMatch ? gidMatch[1] : '0', token);
-        } else {
-          alert('Could not recognize this as a Google Sheets or Drive folder URL.');
-          return;
-        }
-      } catch (e) {
-        console.error('Failed to add quiz', e);
-        alert('Could not access this Google Sheets / Drive item: ' + (e && (e.error || e.message || JSON.stringify(e))));
+    let quiz;
+    try {
+      const token = await ensureAccessToken();
+      if (folderMatch) {
+        quiz = await buildFolderQuiz(folderMatch[1], token);
+      } else if (sheetMatch) {
+        const gidMatch = url.match(/gid=(\d+)/);
+        quiz = await buildSheetQuiz(sheetMatch[1], gidMatch ? gidMatch[1] : '0', token);
+      } else {
+        alert('Could not recognize this as a Google Sheets or Drive folder URL.');
         return;
       }
-
-      const quizzes = getQuizzes();
-      quizzes.push(quiz);
-      saveQuizzes(quizzes);
-      renderQuizList();
+    } catch (e) {
+      console.error('Failed to add quiz', e);
+      alert('Could not access this item: ' + (e && (e.error || e.message || JSON.stringify(e))));
+      return;
     }
 
-    async function buildSheetQuiz(sheetId, gid, token) {
-      const meta = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=properties.title,sheets.properties.title`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json());
+    const quizzes = getQuizzes();
+    quizzes.push(quiz);
+    saveQuizzes(quizzes);
+    renderQuizList();
+  }
 
-      if (meta.error) throw new Error(`Sheets API error ${meta.error.code}: ${meta.error.message}`);
+  async function buildSheetQuiz(sheetId, gid, token) {
+    const meta = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=properties.title,sheets.properties.title`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json());
+    if (meta.error) throw new Error(`Sheets API error ${meta.error.code}: ${meta.error.message}`);
+    const name = meta.properties.title;
+    const tabs = meta.sheets.map(s => s.properties.title);
+    const type = tabs.length > 1 ? 'multisheet' : 'sheet';
+    let words = [];
+    for (const tab of tabs) words = words.concat(await fetchSheetTabWords(sheetId, tab, token));
+    return { id: 'q_' + Date.now(), type, icon: QUIZ_ICONS[type], name, count: words.length, sheetId, folderId: null, tabs };
+  }
 
-      const name = meta.properties.title;
-      const tabs = meta.sheets.map(s => s.properties.title);
-      const type = tabs.length > 1 ? 'multisheet' : 'sheet';
+  async function buildFolderQuiz(folderId, token) {
+    const folderMeta = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?fields=name`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json());
+    if (folderMeta.error) throw new Error(`Drive API error ${folderMeta.error.code}: ${folderMeta.error.message}`);
+    const name = folderMeta.name;
+    const listing = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name)`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json());
+    if (listing.error) throw new Error(`Drive API error ${listing.error.code}: ${listing.error.message}`);
+    const sheetIds = (listing.files || []).map(f => f.id);
+    return { id: 'q_' + Date.now(), type: 'folder', icon: QUIZ_ICONS.folder, name, count: sheetIds.length, sheetId: null, folderId, sheetIds, tabs: [] };
+  }
 
+  // ---------- Quiz Mode ----------
+  let quizWords = [];
+  let quizIndex = 0;
+  let quizRevealed = false;
+
+  async function startQuiz() {
+    const checked = [...document.querySelectorAll('#quizList input[type=checkbox]:checked')];
+    if (checked.length === 0) { alert('Select at least one quiz'); return; }
+
+    let words = [];
+    for (const cb of checked) {
+      const id = cb.dataset.id;
+      if (id === 'my-words') {
+        words = words.concat(JSON.parse(localStorage.getItem('myWords') || '[]'));
+      } else {
+        const quiz = getQuizzes().find(q => q.id === id);
+        if (quiz) words = words.concat(await fetchQuizWords(quiz));
+      }
+    }
+
+    if (words.length === 0) { alert('No words found in selected quizzes'); return; }
+
+    if (localStorage.getItem('quizShuffle') !== 'false') {
+      for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]];
+      }
+    }
+
+    quizWords = words;
+    quizIndex = 0;
+    quizRevealed = false;
+    showQuizWord();
+    document.getElementById('quizOverlay').style.display = 'flex';
+  }
+
+  async function fetchQuizWords(quiz) {
+    const token = await ensureAccessToken();
+    if (quiz.type === 'folder') {
       let words = [];
-      for (const tab of tabs) {
-        words = words.concat(await fetchSheetTabWords(sheetId, tab, token));
-      }
-
-      return { id: 'q_' + Date.now(), type, icon: QUIZ_ICONS[type], name, count: words.length, sheetId, folderId: null, tabs };
-    }
-
-    async function buildFolderQuiz(folderId, token) {
-      const folderMeta = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?fields=name`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json());
-      if (folderMeta.error) throw new Error(`Drive API error ${folderMeta.error.code}: ${folderMeta.error.message}`);
-      const name = folderMeta.name;
-
-      const listing = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name)`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json());
-      if (listing.error) throw new Error(`Drive API error ${listing.error.code}: ${listing.error.message}`);
-
-      const sheetIds = (listing.files || []).map(f => f.id);
-      const sheetCount = sheetIds.length;
-
-      return { id: 'q_' + Date.now(), type: 'folder', icon: QUIZ_ICONS.folder, name, count: sheetCount, sheetId: null, folderId, sheetIds, tabs: [] };
-    }
-
-    // ---------- Quiz Mode ----------
-    let quizWords = [];
-    let quizIndex = 0;
-    let quizRevealed = false;
-
-    async function startQuiz() {
-      const checked = [...document.querySelectorAll('#quizList input[type=checkbox]:checked')];
-      if (checked.length === 0) { alert('Select at least one quiz'); return; }
-
-      let words = [];
-      for (const cb of checked) {
-        const id = cb.dataset.id;
-        if (id === 'my-words') {
-          words = words.concat(JSON.parse(localStorage.getItem('myWords') || '[]'));
-        } else {
-          const quiz = getQuizzes().find(q => q.id === id);
-          if (quiz) {
-            const w = await fetchQuizWords(quiz);
-            words = words.concat(w);
-          }
+      for (const id of (quiz.sheetIds || [])) {
+        const meta = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${id}?fields=sheets.properties.title`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(r => r.json());
+        for (const sheet of (meta.sheets || [])) {
+          words = words.concat(await fetchSheetTabWords(id, sheet.properties.title, token));
         }
-      }
-
-      if (words.length === 0) { alert('No words found in selected quizzes'); return; }
-
-      if (localStorage.getItem('quizShuffle') !== 'false') {
-        for (let i = words.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [words[i], words[j]] = [words[j], words[i]];
-        }
-      }
-
-      quizWords = words;
-      quizIndex = 0;
-      quizRevealed = false;
-      showQuizWord();
-      document.getElementById('quizOverlay').style.display = 'flex';
-    }
-
-    async function fetchQuizWords(quiz) {
-      const token = await ensureAccessToken();
-      if (quiz.type === 'folder') {
-        let words = [];
-        for (const id of (quiz.sheetIds || [])) {
-          const meta = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${id}?fields=sheets.properties.title`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }).then(r => r.json());
-          for (const sheet of (meta.sheets || [])) {
-            words = words.concat(await fetchSheetTabWords(id, sheet.properties.title, token));
-          }
-        }
-        return words;
-      }
-      const tab = quiz.tabs && quiz.tabs[0] ? quiz.tabs[0] : 'Sheet1';
-      return fetchSheetTabWords(quiz.sheetId, tab, token);
-    }
-
-    async function fetchSheetTabWords(sheetId, tabName, token) {
-      // Read columns A (English) and B (Ukrainian) for every row in the tab
-      const range = `'${tabName}'!A:B`;
-      const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      const words = [];
-      for (const row of (data.values || [])) {
-        const en = row[0] || '';
-        const uk = row[1] || '';
-        if (en && uk) words.push({ en, uk });
       }
       return words;
     }
+    const tab = quiz.tabs && quiz.tabs[0] ? quiz.tabs[0] : 'Sheet1';
+    return fetchSheetTabWords(quiz.sheetId, tab, token);
+  }
 
-    function textToHtml(str) {
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+  async function fetchSheetTabWords(sheetId, tabName, token) {
+    const range = `'${tabName}'!A:B`;
+    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const words = [];
+    for (const row of (data.values || [])) {
+      const en = row[0] || '';
+      const uk = row[1] || '';
+      if (en && uk) words.push({ en, uk });
+    }
+    return words;
+  }
+
+  function textToHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+  }
+
+  function showQuizWord() {
+    quizRevealed = false;
+    const wordEl = document.getElementById('quizWord');
+    const transEl = document.getElementById('quizTranslation');
+    wordEl.innerHTML = textToHtml(quizWords[quizIndex].en);
+    transEl.style.display = 'none';
+    transEl.innerHTML = textToHtml(quizWords[quizIndex].uk);
+    const twemojiOpts = { base: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/', folder: 'svg', ext: '.svg' };
+    twemoji.parse(wordEl, twemojiOpts);
+    twemoji.parse(transEl, twemojiOpts);
+    document.getElementById('quizProgress').textContent = `${quizIndex + 1} / ${quizWords.length}`;
+  }
+
+  document.getElementById('quizOverlay').addEventListener('click', e => {
+    if (e.target.id === 'quizClose') return;
+
+    if (!quizRevealed) {
+      quizRevealed = true;
+      document.getElementById('quizTranslation').style.display = 'block';
+      return;
     }
 
-    function showQuizWord() {
-      quizRevealed = false;
-      const wordEl = document.getElementById('quizWord');
-      const transEl = document.getElementById('quizTranslation');
-      wordEl.innerHTML = textToHtml(quizWords[quizIndex].en);
-      transEl.style.display = 'none';
-      transEl.innerHTML = textToHtml(quizWords[quizIndex].uk);
-      const twemojiOpts = { base: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/', folder: 'svg', ext: '.svg' };
-      twemoji.parse(wordEl, twemojiOpts);
-      twemoji.parse(transEl, twemojiOpts);
-      document.getElementById('quizProgress').textContent = `${quizIndex + 1} / ${quizWords.length}`;
-    }
-
-    document.getElementById('quizOverlay').addEventListener('click', e => {
-      if (e.target.id === 'quizClose') return;
-
-      if (!quizRevealed) {
-        quizRevealed = true;
-        document.getElementById('quizTranslation').style.display = 'block';
+    quizIndex++;
+    if (quizIndex >= quizWords.length) {
+      if (localStorage.getItem('quizLoop') === 'true') {
+        quizIndex = 0;
+      } else {
+        closeQuiz(e);
         return;
       }
-
-      quizIndex++;
-      if (quizIndex >= quizWords.length) {
-        if (localStorage.getItem('quizLoop') === 'true') {
-          quizIndex = 0;
-        } else {
-          closeQuiz(e);
-          return;
-        }
-      }
-      showQuizWord();
-    });
-
-    function closeQuiz(e) {
-      e.stopPropagation();
-      document.getElementById('quizOverlay').style.display = 'none';
     }
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/flashcards/sw.js');
-    }
-  </script>
+    showQuizWord();
+  });
+
+  function closeQuiz(e) {
+    e.stopPropagation();
+    document.getElementById('quizOverlay').style.display = 'none';
+  }
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/flashcards/sw.js');
+  }
+</script>
 </body>
 </html>
